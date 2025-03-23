@@ -1,2 +1,6 @@
 venv/
 __pycache__/
+
+data/presim_state/*.mat
+data/postsim_state/*.mat
+data/kop/*.mat
