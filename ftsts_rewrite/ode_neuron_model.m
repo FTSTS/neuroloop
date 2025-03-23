@@ -1,106 +1,100 @@
-function [time v_E v_I S_EI S_IE X_EI X_IE Apost Apre W_IE spike_E spike_I ref_E ref_I synchrony spt_E phif] = ode_neuron_model(plast_on,ON1,vE0,vI0,S_EI0,S_IE0,X_EI0,X_IE0,Apost0,Apre0,W_IE0,W_EI0,mew_e,sigma_e,ue,ui,mew_i,sigma_i,J_E,J_I,C_E,C_I,tau_LTP,tau_LTD,step,sample_duration,N_E,N_I,S_key_EI,S_key_IE,leftover_S_EI,leftover_S_IE,ref_E,ref_I,tau_E_m,tau_I_m, percent_V_stim,comp_time,spt_E0,phif)
-% start timer
-    
+function [time v_E v_I S_EI S_IE X_EI X_IE Apost Apre W_IE spike_E spike_I ref_E ref_I synchrony spt_E phif] = ode_neuron_model(plast_on, ON1, vE0, vI0, S_EI0, S_IE0, X_EI0, X_IE0, Apost0, Apre0, W_IE0, W_EI0, mew_e, sigma_e, ue, ui, mew_i, sigma_i, J_E, J_I, C_E, C_I, tau_LTP, tau_LTD, step, sample_duration, N_E, N_I, S_key_EI, S_key_IE, leftover_S_EI, leftover_S_IE, ref_E, ref_I, tau_E_m, tau_I_m, percent_V_stim, comp_time, spt_E0, phif)
+
 % -- run parameters --
     duration_step = sample_duration/step;
- 
-% -- neuron parameters --
-%     tau_E_m = 10; %ms
-%     tau_I_m = 10;
+
+% Neuron Parameters.
+    % tau_E_m = 10; % ms
+    % tau_I_m = 10;
     tau_d = 1;
     tau_r = 1;
-    vrest = 0; %mV
-    whitenoise_E = randn(duration_step+1,N_E); % gaussian white noise
-    whitenoise_I = randn(duration_step+1,N_I); % gaussian white noise
+    vrest = 0;      % mV
+    whitenoise_E = randn(duration_step+1,N_E);  % gaussian white noise
+    whitenoise_I = randn(duration_step+1,N_I);  % gaussian white noise
     vreset = 14;
     refractory = 2; % ms
-%     ref_E = zeros(1,N_E);
-%     ref_I = zeros(1,N_I);
-     
-  
-     
-% -- Synaptic Parameters --    
+    % ref_E = zeros(1, N_E);
+    % ref_I = zeros(1, N_I);
+
+% Synaptic Parameters.
     WEI = W_EI0;
-    syn_delay = 5; %ms
+    syn_delay = 5; % ms
     num_synapses_IE = max(max(S_key_IE));
     num_synapses_EI = max(max(S_key_EI));
-     
-% -- Plasticity Parameters --
-    dApre_0 = 0.005*1;
-    dApost_0 = dApre_0*1;
+
+% Plasticity Parameters.
+    dApre_0 = 0.005 * 1;
+    dApost_0 = dApre_0 * 1;
     Apre_i = 0;
     Apost_i = 0;
-    a_LTD = -1*plast_on*1.1;
-    a_LTP = 1*plast_on*1;
-    eta = 0.25; 
-       
-% -- intialize vectors --
-    % ode vectors
-    dv_Edt = zeros(duration_step+1,N_E);
-    dv_Idt = zeros(duration_step+1,N_I);
-    dS_EIdt = zeros(duration_step+1,N_E);
-    dS_IEdt = zeros(duration_step+1,N_I);
-    dX_EIdt = zeros(duration_step+1,N_E);
-    dX_IEdt = zeros(duration_step+1,N_I);
-    dApostdt = zeros(duration_step+1,num_synapses_IE);
-    dApredt = zeros(duration_step+1,num_synapses_IE);
+    a_LTD = -1 * plast_on * 1.1;
+    a_LTP = 1 * plast_on * 1;
+    eta = 0.25;
+
+% Intialize ODE Vectors.
+    dv_Edt = zeros(duration_step + 1, N_E);
+    dv_Idt = zeros(duration_step + 1, N_I);
+    dS_EIdt = zeros(duration_step + 1, N_E);
+    dS_IEdt = zeros(duration_step + 1, N_I);
+    dX_EIdt = zeros(duration_step + 1, N_E);
+    dX_IEdt = zeros(duration_step + 1, N_I);
+    dApostdt = zeros(duration_step + 1, num_synapses_IE);
+    dApredt = zeros(duration_step + 1, num_synapses_IE);
      
-    % state vectors    
-    v_E = zeros(duration_step+1,N_E);
-    v_I = zeros(duration_step+1,N_I);     
-    S_EI = zeros(duration_step+1,N_E);
-    S_IE = zeros(duration_step+1,N_I);    
-    X_EI = zeros(duration_step+1,N_E);
-    X_IE = zeros(duration_step+1,N_I);    
-    Apost = zeros(duration_step+1,num_synapses_IE);
-    Apre = zeros(duration_step+1,num_synapses_IE);    
-    W_IE = zeros(duration_step+1,num_synapses_IE);    
-    time = zeros(duration_step+1,1);
-    spike_E = zeros(duration_step+1,N_E);
-    spike_I = zeros(duration_step+1,N_I);
-    spt_E = zeros(1,N_E);    
-     
+% Initialize State Vectors.
+    v_E = zeros(duration_step + 1, N_E);
+    v_I = zeros(duration_step + 1, N_I);
+    S_EI = zeros(duration_step + 1, N_E);
+    S_IE = zeros(duration_step + 1, N_I);
+    X_EI = zeros(duration_step + 1, N_E);
+    X_IE = zeros(duration_step + 1, N_I);
+    Apost = zeros(duration_step + 1, num_synapses_IE);
+    Apre = zeros(duration_step + 1, num_synapses_IE);
+    W_IE = zeros(duration_step + 1, num_synapses_IE);
+    time = zeros(duration_step + 1, 1);
+    spike_E = zeros(duration_step + 1, N_E);
+    spike_I = zeros(duration_step + 1, N_I);
+    spt_E = zeros(1, N_E);
+
     v_E(1,:) = vE0;
     v_I(1,:) = vI0;
-     
+
     S_EI(1,:) = S_EI0;
     S_IE(1,:) = S_IE0;
-     
+
     X_EI(1,:) = X_EI0;
     X_IE(1,:) = X_IE0;
-     
+
     Apost(1,:) = Apost0;
     Apre(1,:) = Apre0;
-     
+
     W_IE(1,:) = W_IE0;
     spt_E(1,:) = spt_E0;
 
-% --- Stimulation Parameters ---    
+% Stimulation Parameters.
+    % -- Number of E neurons stimulating.
+    stim_percent_E = zeros(1, N_E);
+    a = 1;
+    b = floor(percent_V_stim * N_E);
+    
+    % TO MAKE FIGURES 3,4,7 uncomment
+    stim_percent_E(1, a:b) = 1;
+    
+    % TO MAKE FIGURES 6 uncomment
+    % stim_percent_E(1, a:b) = 1 + 0.1 * randn(1, b);
+    
+    % -- Number of I neurons stimulating.
+    stim_percent_I = zeros(1, N_I);
+    a = 1;
+    b = floor(percent_V_stim * N_I);
+    
+    % TO MAKE FIGURES 3,4,7 uncomment
+    stim_percent_I(1, a:b) = 1;
+    
+    % TO MAKE FIGURES 6 uncomment
+    % stim_percent_I(1, a:b) = 1 + 0.1 * randn(1, b);
 
-    
-    % number of E neurons stimulating
-    stim_percent_E = zeros(1,N_E);
-    a = 1;
-    b = floor(percent_V_stim*N_E);
-    
-    % TO MAKE FIGURES 3,4,7 uncomment
-    stim_percent_E(1,a:b) = 1;
-    
-    % TO MAKE FIGURES 6 uncomment
-%      stim_percent_E(1,a:b) = 1 + 0.1*randn(1,b);
-    
-    % number of I neurons stimulating
-    stim_percent_I = zeros(1,N_I);
-    a = 1;
-    b = floor(percent_V_stim*N_I);
-    
-    % TO MAKE FIGURES 3,4,7 uncomment
-    stim_percent_I(1,a:b) = 1;
-    
-    % TO MAKE FIGURES 6 uncomment
-%     stim_percent_I(1,a:b) = 1 + 0.1*randn(1,b);
-    
-    
+% todo: what the heck is going on here
 for i = 1:duration_step
 % -- time update --
     time(i+1,1) = time(i,1) + step;
@@ -202,10 +196,10 @@ for i = 1:duration_step
                      
                     % plasticity update - "on_pre"
                     Apre(i+1,index) = Apre(i,index) + dApre_0;
-                    W_IE(i+1,index) = W_IE(i,index) + eta*a_LTD*Apost(i,index);
+                    W_IE(i+1,index) = W_IE(i,index) + eta * a_LTD * Apost(i,index);
                     
                     % max synaptic weight check                       
-                    if (J_I*W_IE(i+1,index)) < 10
+                    if (J_I * W_IE(i+1, index)) < 10
                         W_IE(i+1,index) = 10/J_I;
                     end
                 end
@@ -244,11 +238,11 @@ for i = 1:duration_step
                 if S_key_IE(j,k) ~= 0
                     index = S_key_IE(j,k);
                     Apost(i+1,index) = Apost(i,index) + dApost_0;
-                    W_IE(i+1,index) = W_IE(i,index) + eta*a_LTP*Apre(i,index);
+                    W_IE(i+1,index) = W_IE(i,index) + eta * a_LTP * Apre(i,index);
                      
                     % max synaptic weight check
-                    if (J_I*W_IE(i+1,index)) > 290
-                        W_IE(i+1,index) = 290/J_I;                   
+                    if (J_I * W_IE(i+1, index)) > 290
+                        W_IE(i+1, index) = 290/J_I;
                     end
                 end
             end
