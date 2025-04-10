@@ -12,6 +12,7 @@ $ git submodule update --init --recursive
 python3.10 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+pip install ./dbsenv  # install the dbsenv submodule
 
 # Run the example program.
 python src/main.py
