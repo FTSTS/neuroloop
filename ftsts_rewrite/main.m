@@ -39,6 +39,7 @@ clearvars
     epsilon_E = 0.1;    % connectivity
     epsilon_I = 0.1;    % connectivity
     
+    % rand("seed", 42);  % debug
     [S_key_EI, num_synapses_EI] = make_synaptic_connections(N_I, N_E, epsilon_I);  % I → E
     [S_key_IE, num_synapses_IE] = make_synaptic_connections(N_E, N_I, epsilon_E);  % E → I
     
@@ -171,6 +172,7 @@ for i = 1:num_samples
     % ui = Vstim * Ue(1, a:b);
 
     percent_V_stim = 1;
+    % randn("seed", 42);  % debug
     [timem v_Em v_Im S_EIm S_IEm X_EIm X_IEm Apostm Aprem W_IEm spike_Em spike_Im ref_Em ref_Im synchronym spt_Em phif] = ode_neuron_model(plast_on,ON,vE0,vI0,S_EI0,S_IE0,X_EI0,X_IE0,Apost0,Apre0,W_IE0,W_EI0,mew_e,sigma_e,ue,ui,mew_i,sigma_i,J_E,J_I,C_E,C_I,tau_LTP,tau_LTD,step_size,sample_duration,N_E,N_I,S_key_EI,S_key_IE,leftover_S_EI,leftover_S_IE,ref_E,ref_I,tau_E_m,tau_I_m, percent_V_stim,comp_time,spt_E0,phif);
 
     % recorded variables
