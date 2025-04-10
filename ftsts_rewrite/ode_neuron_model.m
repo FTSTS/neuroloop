@@ -104,14 +104,14 @@ for i = 1:duration_step
         % dxdt update
         if i > syn_delay/step
             % TO MAKE FIGURES 3,4,7 uncomment
-%             dv_Edt(i,:) = (vrest - v_E(i,:) + J_E/C_E*S_EI(i-syn_delay/step,:) + mew_e + ON1.*ue(1,i) + sigma_e.*(tau_E_m(1,:).^0.5).*whitenoise_E(i,:))./tau_E_m(1,:);
+            dv_Edt(i,:) = (vrest - v_E(i,:) + J_E/C_E*S_EI(i-syn_delay/step,:) + mew_e + ON1.*ue(1,i) + sigma_e.*(tau_E_m(1,:).^0.5).*whitenoise_E(i,:))./tau_E_m(1,:);
             % TO MAKE FIGURE 6 uncomment
-            dv_Edt(i,:) = (vrest - v_E(i,:) + J_E/C_E*S_EI(i-syn_delay/step,:) + mew_e + ON1.*ue(1,i) + ON1.*10*randn(1,N_E) + sigma_e.*(tau_E_m(1,:).^0.5).*whitenoise_E(i,:))./tau_E_m(1,:);
+            % dv_Edt(i,:) = (vrest - v_E(i,:) + J_E/C_E*S_EI(i-syn_delay/step,:) + mew_e + ON1.*ue(1,i) + ON1.*10*randn(1,N_E) + sigma_e.*(tau_E_m(1,:).^0.5).*whitenoise_E(i,:))./tau_E_m(1,:);
         else
             % TO MAKE FIGURES 3,4,7 uncomment
-%             dv_Edt(i,:) = (vrest - v_E(i,:) + J_E/C_E*leftover_S_EI(i,:) + mew_e + ON1.*ue(1,i) + sigma_e.*(tau_E_m(1,:).^0.5).*whitenoise_E(i,:) )./tau_E_m(1,:);
+            dv_Edt(i,:) = (vrest - v_E(i,:) + J_E/C_E*leftover_S_EI(i,:) + mew_e + ON1.*ue(1,i) + sigma_e.*(tau_E_m(1,:).^0.5).*whitenoise_E(i,:) )./tau_E_m(1,:);
             % TO MAKE FIGURE 6 uncomment
-            dv_Edt(i,:) = (vrest - v_E(i,:) + J_E/C_E*leftover_S_EI(i,:) + mew_e + ON1.*ue(1,i) + ON1.*10*randn(1,N_E) + sigma_e.*(tau_E_m(1,:).^0.5).*whitenoise_E(i,:) )./tau_E_m(1,:);
+            % dv_Edt(i,:) = (vrest - v_E(i,:) + J_E/C_E*leftover_S_EI(i,:) + mew_e + ON1.*ue(1,i) + ON1.*10*randn(1,N_E) + sigma_e.*(tau_E_m(1,:).^0.5).*whitenoise_E(i,:) )./tau_E_m(1,:);
         end
         dS_EIdt(i,:) = (-S_EI(i,:) + X_EI(i,:))/tau_d;
         dX_EIdt(i,:) = -X_EI(i,:)/tau_r;
