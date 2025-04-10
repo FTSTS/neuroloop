@@ -38,39 +38,10 @@ clearvars
 % Make Random Synaptic Conncetions.
     epsilon_E = 0.1;    % connectivity
     epsilon_I = 0.1;    % connectivity
-    S_key_IE = zeros(N_E, N_I);
-    S_key_EI = zeros(N_I, N_E);
-
-    % --- I to E ---
-    syn_count = 0;
-    for pre_neuron = 1:N_I
-        for post_neuron = 1:N_E
-            x = rand;
-            if x <= epsilon_I
-                syn_count = syn_count + 1;
-                S_key_EI(pre_neuron, post_neuron) = syn_count;
-            else
-                S_key_EI(pre_neuron, post_neuron) = 0;
-            end
-        end
-    end
-
-    % --- E to I ---
-    syn_count = 0;
-    for pre_neuron = 1:N_E
-        for post_neuron = 1:N_I
-            x = rand;
-            if x <= epsilon_E
-                syn_count = syn_count + 1;
-                S_key_IE(pre_neuron, post_neuron) = syn_count;
-            else
-                S_key_IE(pre_neuron, post_neuron) = 0;
-            end
-        end
-    end
-
-    num_synapses_IE = max(max(S_key_IE));
-    num_synapses_EI = max(max(S_key_EI));
+    
+    [S_key_EI, num_synapses_EI] = make_synaptic_connections(N_I, N_E, epsilon_I);  % I → E
+    [S_key_IE, num_synapses_IE] = make_synaptic_connections(N_E, N_I, epsilon_E);  % E → I
+    
     W_IE = zeros(num_steps, 1);
     W_IE_std = zeros(num_steps, 1);
 
