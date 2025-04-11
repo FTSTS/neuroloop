@@ -179,7 +179,7 @@ def ode_neuron_model(
         X_EI[t+1, :] = X_EI[t, :] + step_size * dX_EIdt[t, :]
 
         # Calculate Kuramoto Order.
-        spt_E[0, :] = spt_E[0, :]
+        spt_E[t+1, :] = spt_E[t, :]
         # phif update commented out in original code:
         # phif[i+1+int(comp_time/step), :] = 2*np.pi * (time[i+1, 0] + comp_time - spt_E[i, :])
 
