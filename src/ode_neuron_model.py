@@ -66,9 +66,7 @@ def ode_neuron_model(
     # Synaptic Parameters.
     WEI = W_EI0
     syn_delay = 5  # ms
-    # In Matlab: num_synapses_IE = max(max(S_key_IE));
     num_synapses_IE = int(np.max(S_key_IE))
-    # In Matlab: num_synapses_EI = max(max(S_key_EI));
     num_synapses_EI = int(np.max(S_key_EI))
 
     # Plasticity Parameters.
@@ -292,6 +290,8 @@ def ode_neuron_model(
                 v_I[t+1, k] = vrest
 
     # Calculate Synchrony.
+    # todo: what synchrony measurement is this?
+    # todo: different from Kuramoto?
     N = N_E  # + N_I;
     Vcomb = np.zeros((num_steps_per_sample + 1, N))
     Vcomb[:, 0:N_E] = v_E
@@ -304,14 +304,11 @@ def ode_neuron_model(
     # variance of voltage at each time step
     sigma_vi = np.zeros(N)
     sum_sig = 0
-    # this can be rewritten to be not a for loop
     for j in range(N):
         sigma_vi[j] = np.mean(Vcomb[:, j]**2) - (np.mean(Vcomb[:, j]))**2
         sum_sig = sum_sig + sigma_vi[j]
 
     syn_squ = sigma_squ_v / (sum_sig / N)
     synchrony = np.sqrt(syn_squ)
-
-    # print("End: ode_neuron_model()")
 
     return time, v_E, v_I, S_EI, S_IE, X_EI, X_IE, Apost, Apre, W_IE, spike_E, spike_I, ref_E, ref_I, synchrony, spt_E, phif

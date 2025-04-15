@@ -14,7 +14,19 @@ from pulsatile_input import pulsatile_input
 from ode_neuron_model import ode_neuron_model
 
 
+# pylint: disable=invalid-name
+
+
 def make_synaptic_connections(num_pre, num_post, epsilon):
+    """
+    Returns a lookup table for synaptic connections and the number of
+    connections made.
+
+    A connection is established with a probability defined by `epsilon`.
+
+    The synapse at `lut[pre, post]` represents a synaptic connection from a
+    pre-synaptic neuron `pre` to a post-synaptic neuron `post`.
+    """
 
     # synaptic connection lookup table
     syn_lut = np.zeros((num_pre, num_post), dtype=int)
@@ -28,7 +40,13 @@ def make_synaptic_connections(num_pre, num_post, epsilon):
     return syn_lut, count
 
 
-def dbs_simulation(seed=None, cache=False):
+def dbs_simulation(
+        duration=25 * 1000,  # (ms) duration of simulation
+        N_E=1600,
+        N_I=400,
+        seed=None,
+        cache=False,
+):
     """
     Sets up and runs the DBS simulation.
 
@@ -46,7 +64,6 @@ def dbs_simulation(seed=None, cache=False):
     tic = time.time()
 
     # Run Parameters.
-    duration = 25 * 1000  # (ms) duration of simulation
     step_size = 0.1  # (ms)
     num_steps = int(duration / step_size)
 
@@ -56,17 +73,12 @@ def dbs_simulation(seed=None, cache=False):
     mew_i = 18
     sigma_i = 3
     mew_c = 0
-    N_E = 1600
-    N_I = 400
-    # N_E = 800
-    # N_I = 200
     Ntot = N_E + N_I
 
     # Synaptic Parameters.
     Weight_0 = 1
     J_E = 100  # synaptic strength (J_E = J_EI)
-    J_I = 260  # synaptic strength (J_I = J_IE)  # TO MAKE FIGURE 3,6,7
-    # J_I = 75  # J_I = J_IE  # TO MAKE FIGURE 4
+    J_I = 260  # synaptic strength (J_I = J_IE)
     N_i = 1  # copilot: number of synapses per neuron?
     C_E = 0.3 * Ntot  # N_I;
     C_I = 0.3 * Ntot  # N_E;
@@ -88,7 +100,7 @@ def dbs_simulation(seed=None, cache=False):
         epsilon=epsilon_E,
     )
 
-    W_IE = np.zeros((int(num_steps), 1))
+    W_IE = np.zeros((num_steps, 1))
     W_IE_std = np.zeros((int(num_steps), 1))
 
     # Initial Conditions.
@@ -116,12 +128,10 @@ def dbs_simulation(seed=None, cache=False):
     Synchrony = np.zeros((int(num_samples), 1))
     time_syn = np.zeros((int(num_samples), 1))
     num_steps_per_sample = int(sample_duration / step_size)
-    spike_time_E = np.zeros((int(num_steps_per_sample), N_E))
+    spike_time_E = np.zeros((num_steps, N_E))
     spE_count = np.zeros((int(num_steps_per_sample), N_E))
 
     # TO MAKE FIGURE 7
-    # tau_E_m = 10  # 8 + 4*np.random.rand(1, N_E);
-    # tau_I_m = 10  # 8 + 4*np.random.rand(1, N_I);
     tau_E_m = np.full((1, N_E), 10)
     tau_I_m = np.full((1, N_I), 10)
 
@@ -144,8 +154,6 @@ def dbs_simulation(seed=None, cache=False):
     Ui = Ui.reshape(1, -1)  # (N,) -> (1, N)
 
     time_array = np.zeros((num_steps, 1))
-    W_IE_full = np.zeros((num_steps, 1))
-    spike_time_E_full = np.zeros((num_steps, N_E))
 
     # Save Presim State.
     if cache:
@@ -190,8 +198,6 @@ def dbs_simulation(seed=None, cache=False):
 
             # Other
             'time_array': time_array,
-            'W_IE_full': W_IE_full,
-            'spike_time_E_full': spike_time_E_full,
         })
 
     # Run Simulation.
@@ -199,13 +205,8 @@ def dbs_simulation(seed=None, cache=False):
 
         comp_time = (i - 1) * sample_duration
 
-        # TO MAKE FIGURES 3,6,7
         if np.mean(W_IE0) * J_I < 75:  # average effective inhibitition
             cross_100 = 0
-
-        # TO MAKE FIGURE 4 uncomment
-        # if np.mean(W_IE0)*J_I > 125:
-        #     cross_100 = 0
 
         ON = 1 * ((i * sample_duration) >= 2000) * cross_100  # control input
         plast_on = 1 * ((i * sample_duration) >= 100)  # pasticity
@@ -219,15 +220,9 @@ def dbs_simulation(seed=None, cache=False):
         # elif i > 1200 and i % 10 == 0:
         #     print(f"\tSample: {i} / {num_samples}\t({sample_window})")
 
-        # TO MAKE FIGURE 3 uncomment
         Vstim = 100
         ue = Vstim * Ue[:, sample_start:sample_end]
         ui = Vstim * Ui[:, sample_start:sample_end]
-
-        # TO MAKE FIGURE 4 uncomment
-        # Vstim = 200
-        # ue = Vstim * Ui[0, a_index:b_index]
-        # ui = Vstim * Ue[0, a_index:b_index]
 
         percent_V_stim = 1
 
@@ -249,61 +244,64 @@ def dbs_simulation(seed=None, cache=False):
             synchronym,
             spt_Em,
             phif
-        ) = ode_neuron_model(  # tmp deepcopy to simulate matlab pass by value
-            plast_on=copy.deepcopy(plast_on),
-            ON1=copy.deepcopy(ON),
-            vE0=copy.deepcopy(vE0),
-            vI0=copy.deepcopy(vI0),
-            S_EI0=copy.deepcopy(S_EI0),
-            S_IE0=copy.deepcopy(S_IE0),
-            X_EI0=copy.deepcopy(X_EI0),
-            X_IE0=copy.deepcopy(X_IE0),
-            Apost0=copy.deepcopy(Apost0),
-            Apre0=copy.deepcopy(Apre0),
-            W_IE0=copy.deepcopy(W_IE0),
-            W_EI0=copy.deepcopy(W_EI0),
-            mew_e=copy.deepcopy(mew_e),
-            sigma_e=copy.deepcopy(sigma_e),
-            ue=copy.deepcopy(ue),
-            ui=copy.deepcopy(ui),
-            mew_i=copy.deepcopy(mew_i),
-            sigma_i=copy.deepcopy(sigma_i),
-            J_E=copy.deepcopy(J_E),
-            J_I=copy.deepcopy(J_I),
-            C_E=copy.deepcopy(C_E),
-            C_I=copy.deepcopy(C_I),
-            tau_LTP=copy.deepcopy(tau_LTP),
-            tau_LTD=copy.deepcopy(tau_LTD),
-            step_size=copy.deepcopy(step_size),
-            sample_duration=copy.deepcopy(sample_duration),
-            N_E=copy.deepcopy(N_E),
-            N_I=copy.deepcopy(N_I),
-            S_key_EI=copy.deepcopy(S_key_EI),
-            S_key_IE=copy.deepcopy(S_key_IE),
-            leftover_S_EI=copy.deepcopy(leftover_S_EI),
-            leftover_S_IE=copy.deepcopy(leftover_S_IE),
-            ref_E=copy.deepcopy(ref_E),
-            ref_I=copy.deepcopy(ref_I),
-            tau_E_m=copy.deepcopy(tau_E_m),
-            tau_I_m=copy.deepcopy(tau_I_m),
-            percent_V_stim=copy.deepcopy(percent_V_stim),
-            comp_time=copy.deepcopy(comp_time),
-            spt_E0=copy.deepcopy(spt_E0),
-            phif=copy.deepcopy(phif),
+        ) = ode_neuron_model(
+            plast_on=plast_on,
+            ON1=ON,
+            vE0=vE0,
+            vI0=vI0,
+            S_EI0=S_EI0,
+            S_IE0=S_IE0,
+            X_EI0=X_EI0,
+            X_IE0=X_IE0,
+            Apost0=Apost0,
+            Apre0=Apre0,
+            W_IE0=W_IE0,
+            W_EI0=W_EI0,
+            mew_e=mew_e,
+            sigma_e=sigma_e,
+            ue=ue,
+            ui=ui,
+            mew_i=mew_i,
+            sigma_i=sigma_i,
+            J_E=J_E,
+            J_I=J_I,
+            C_E=C_E,
+            C_I=C_I,
+            tau_LTP=tau_LTP,
+            tau_LTD=tau_LTD,
+            step_size=step_size,
+            sample_duration=sample_duration,
+            N_E=N_E,
+            N_I=N_I,
+            S_key_EI=S_key_EI,
+            S_key_IE=S_key_IE,
+            leftover_S_EI=leftover_S_EI,
+            leftover_S_IE=leftover_S_IE,
+            ref_E=ref_E,
+            ref_I=ref_I,
+            tau_E_m=tau_E_m,
+            tau_I_m=tau_I_m,
+            percent_V_stim=percent_V_stim,
+            comp_time=comp_time,
+            spt_E0=spt_E0,
+            phif=phif,
         )
 
         # recorded variables
-        time_array[sample_start:sample_end, 0] = (timem[0:num_steps_per_sample, 0]
-                                                  + (i - 1) * sample_duration)
-        W_IE_full[sample_start:sample_end, 0] = np.mean(W_IEm[0:num_steps_per_sample, :],
-                                                        axis=1)
+        time_array[sample_start:sample_end, 0] = (
+            timem[0:num_steps_per_sample, 0] + (i - 1) * sample_duration
+        )
+        W_IE[sample_start:sample_end, 0] = np.mean(
+            W_IEm[0:num_steps_per_sample, :],
+            axis=1
+        )
         # spike_E[sample_start:sample_end, :] = spike_Em[0:num_steps_per_sample, :]
         # spike_I[sample_start:sample_end, :] = spike_Im[0:num_steps_per_sample, :]
         Synchrony[i - 1, 0] = synchronym
         time_syn[i - 1, 0] = sample_duration * (i)
-        # spike_time_E_full[sample_start:sample_end, :] = spike_Em[0:num_steps_per_sample, :]
-        spike_time_E_full[sample_start:sample_end,
-                          :] = spt_Em[0:num_steps_per_sample, :]
+        spike_time_E[sample_start:sample_end, :] = (
+            spt_Em[0:num_steps_per_sample, :]
+        )
 
         # generate intial condition for next run
         vE0 = v_Em[num_steps_per_sample - 1, :].reshape(1, -1)
@@ -368,10 +366,49 @@ def dbs_simulation(seed=None, cache=False):
 
             # Other
             'time_array': time_array,
-            'W_IE_full': W_IE_full,
-            'spike_time_E_full': spike_time_E_full,
         })
+
+    return (  # for example run
+        spike_time_E,
+        step_size,
+        duration,
+        N_E,
+        J_I,
+        W_IE,
+    )
+
+
+def main():
+    """Example run"""
+
+    data = dbs_simulation(
+        duration=25*1000,
+        N_E=1600,
+        N_I=400,
+        seed=42,
+        cache=False,
+    )
+    sptime, step_size, duration, ne, J_I, W_IE = data
+    t = np.linspace(0.1,
+                    duration,
+                    int(round((duration - 0.1) / step_size)) + 1)
+    t = np.ascontiguousarray(t, dtype=np.float64)
+
+    # Compute Neuron Synchronization.
+    from kuramoto_syn import kuramoto_syn
+    re = kuramoto_syn(
+        sptime=sptime,
+        t=t,
+        step_size=step_size,
+        duration=duration,
+        num_neurons=ne,
+        fast=True,
+    )
+
+    from plotting import plot_kop, plot_avg_synaptic_weight
+    plot_kop(t, re)
+    plot_avg_synaptic_weight(t, J_I, W_IE, duration)
 
 
 if __name__ == "__main__":
-    dbs_simulation(seed=42, cache=True)
+    main()
