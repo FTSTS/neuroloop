@@ -63,6 +63,62 @@ def plot_avg_synaptic_weight(time, J_I, W_IE, duration):
     plt.show()
 
 
+def plot_synchrony(syn):
+    t = np.arange(len(syn))
+    plt.figure(figsize=(10, 4))
+    plt.plot(t, syn)
+    plt.xlabel("Time")
+    plt.ylabel("Synchrony")
+    plt.tight_layout()
+    plt.show()
+
+# def plot_spike_patterns(spike_e, spike_i, step_size):
+#     spike_e_T = spike_e.T
+#     neuron_indices, time_indices = np.where(spike_e_T != 0)
+#     spike_times = spike_e_T[neuron_indices, time_indices]
+#     plt.figure(figsize=(10, 6))
+#     plt.scatter(spike_times[1_000_000:1_001_000], neuron_indices[1_000_000:1_001_000], s=2)
+
+#     # plt.figure(figsize=(12, 8))
+#     # tb = np.arange(200, 600, step_size)
+#     # tm = np.arange(5000, 5400, step_size)
+#     # te = np.arange(38000, 38400, step_size)
+#     # plt.figure(3)
+#     # # E ?
+#     # print("E")
+#     # plt.subplot(3,1,1)
+#     # a = int(200/step_size)
+#     # b = int(600/step_size)
+#     # plt.plot(tb/1000, spike_e[a:b, :], 'k.', tb/1000, spike_i[a:b, :], 'r.')
+#     # plt.xlim([200/1000, 600/1000])
+#     # plt.ylim([0.9, 2000.1])
+#     # plt.ylabel('Neuron Index')
+#     # plt.xlabel('Time (sec)')
+
+#     # # F ?
+#     # print("F")
+#     # c = int(5000/step_size)
+#     # d = int(5400/step_size)
+#     # plt.subplot(3,1,2)
+#     # plt.plot(tm/1000, spike_e[c:d, :], 'k.', tm/1000, spike_i[c:d, :], 'r.')
+#     # plt.xlim([5000/1000, 5400/1000])
+#     # plt.ylim([0.9, 2000.1])
+#     # plt.ylabel('Neuron Index')
+#     # plt.xlabel('Time (sec)')
+
+#     # G ?
+#     # print("G")
+#     # e = int(38000/step_size)
+#     # f = int(38400/step_size)
+#     # plt.subplot(3,1,3)
+#     # plt.plot(te/1000, spike_e[e:f, :], 'k.', te/1000, spike_i[e:f, :], 'r.')
+#     # plt.xlim([38000/1000, 38400/1000])
+#     # plt.ylim([0.9, 2000.1])
+#     # plt.ylabel('Neuron Index')
+#     # plt.xlabel('Time (sec)')
+#     plt.show()
+
+
 def plot_avg_synaptic_input(S_EI, S_IE, duration, step_size):
     num_steps = int(duration / step_size)
     t = [i * step_size for i in range(num_steps)]
@@ -103,47 +159,9 @@ def plot_avg_synaptic_input(S_EI, S_IE, duration, step_size):
 #     # plt.xlabel('Time (sec)')
 #     # plt.legend(['Excitatory Neurons', 'Inhibitory Neurons'])
 
-#     # E, F, G?
 #     # plt.figure(4)
 #     # plt.plot(t/1000, spike_E, 'k.', t/1000, spike_I, 'r.')
 #     # plt.xlim([400/1000, 500/1000])
 #     # plt.ylim([0.9, 2000.1])
 #     # plt.ylabel('Neuron Index')
 #     # plt.xlabel('Time (sec)')
-
-#     # tb = np.arange(200, 600+step_size, step_size)
-#     # tm = np.arange(5000, 5400+step_size, step_size)
-#     # te = np.arange(38000, 38400+step, step)
-
-#     # E, F, G?
-#     # plt.figure(3)
-#     # E ?
-#     # plt.subplot(3,1,1)
-#     # a = int(200/step)
-#     # b = int(600/step)
-#     # plt.plot(tb/1000, spike_E[a:b, :], 'k.', tb/1000, spike_I[a:b, :], 'r.')
-#     # plt.xlim([200/1000, 600/1000])
-#     # plt.ylim([0.9, 2000.1])
-#     # plt.ylabel('Neuron Index')
-#     # plt.xlabel('Time (sec)')
-
-#     # F ?
-#     # c = int(5000/step)
-#     # d = int(5400/step)
-#     # plt.subplot(3,1,2)
-#     # plt.plot(tm/1000, spike_E[c:d, :], 'k.', tm/1000, spike_I[c:d, :], 'r.')
-#     # plt.xlim([5000/1000, 5400/1000])
-#     # plt.ylim([0.9, 2000.1])
-#     # plt.ylabel('Neuron Index')
-#     # plt.xlabel('Time (sec)')
-
-#     # G ?
-#     # e = int(38000/step)
-#     # f = int(38400/step)
-#     # plt.subplot(3,1,3)
-#     # plt.plot(te/1000, spike_E[e:f, :], 'k.', te/1000, spike_I[e:f, :], 'r.')
-#     # plt.xlim([38000/1000, 38400/1000])
-#     # plt.ylim([0.9, 2000.1])
-#     # plt.ylabel('Neuron Index')
-#     # plt.xlabel('Time (sec)')
-#     # plt.show()
