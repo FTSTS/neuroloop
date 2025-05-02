@@ -3,7 +3,7 @@ import numpy as np
 
 def ode_neuron_model(
         plast_on,
-        ON1,
+        ON,
         vE0,
         vI0,
         S_EI0,
@@ -48,7 +48,7 @@ def ode_neuron_model(
     tau_E_m: membrane time constant for excitatory neurons
     """
 
-    num_steps_per_sample = int(sample_duration / step_size)  # steps per sample
+    num_steps = int(sample_duration / step_size)  # steps per sample
 
     # Neuron Parameters.
     # tau_E_m = 10; %ms
@@ -56,8 +56,8 @@ def ode_neuron_model(
     tau_d = 1
     tau_r = 1
     vrest = 0  # mV
-    whitenoise_E = np.random.randn(num_steps_per_sample + 1, N_E)  # X(t)
-    whitenoise_I = np.random.randn(num_steps_per_sample + 1, N_I)  # X(t)
+    whitenoise_E = np.random.randn(num_steps + 1, N_E)  # X(t)
+    whitenoise_I = np.random.randn(num_steps + 1, N_I)  # X(t)
     vreset = 14
     refractory = 2  # ms
     # ref_E = zeros(1, N_E);
@@ -79,30 +79,30 @@ def ode_neuron_model(
     eta = 0.25
 
     # ODE Vectors.
-    dv_Edt = np.zeros((num_steps_per_sample+1, N_E))  # membrane potential
-    dv_Idt = np.zeros((num_steps_per_sample+1, N_I))  # membrane potential
-    dS_EIdt = np.zeros((num_steps_per_sample+1, N_E))  # synaptic conductance
-    dS_IEdt = np.zeros((num_steps_per_sample+1, N_I))  # synaptic conductance
-    dX_EIdt = np.zeros((num_steps_per_sample+1, N_E))
-    dX_IEdt = np.zeros((num_steps_per_sample+1, N_I))
-    dApostdt = np.zeros((num_steps_per_sample+1, num_synapses_IE))
-    dApredt = np.zeros((num_steps_per_sample+1, num_synapses_IE))
+    dv_Edt = np.zeros((num_steps + 1, N_E))  # membrane potential
+    dv_Idt = np.zeros((num_steps + 1, N_I))  # membrane potential
+    dS_EIdt = np.zeros((num_steps + 1, N_E))  # synaptic conductance
+    dS_IEdt = np.zeros((num_steps + 1, N_I))  # synaptic conductance
+    dX_EIdt = np.zeros((num_steps + 1, N_E))
+    dX_IEdt = np.zeros((num_steps + 1, N_I))
+    dApostdt = np.zeros((num_steps + 1, num_synapses_IE))
+    dApredt = np.zeros((num_steps + 1, num_synapses_IE))
 
     # State Vectors.
-    v_E = np.zeros((num_steps_per_sample+1, N_E))
-    v_I = np.zeros((num_steps_per_sample+1, N_I))
-    S_EI = np.zeros((num_steps_per_sample+1, N_E))
-    S_IE = np.zeros((num_steps_per_sample+1, N_I))
-    X_EI = np.zeros((num_steps_per_sample+1, N_E))
-    X_IE = np.zeros((num_steps_per_sample+1, N_I))
-    Apost = np.zeros((num_steps_per_sample+1, num_synapses_IE))
-    Apre = np.zeros((num_steps_per_sample+1, num_synapses_IE))
-    W_IE = np.zeros((num_steps_per_sample+1, num_synapses_IE))
-    time = np.zeros((num_steps_per_sample+1, 1))
-    spike_E = np.zeros((num_steps_per_sample+1, N_E))
-    spike_I = np.zeros((num_steps_per_sample+1, N_I))
+    v_E = np.zeros((num_steps + 1, N_E))
+    v_I = np.zeros((num_steps + 1, N_I))
+    S_EI = np.zeros((num_steps + 1, N_E))
+    S_IE = np.zeros((num_steps + 1, N_I))
+    X_EI = np.zeros((num_steps + 1, N_E))
+    X_IE = np.zeros((num_steps + 1, N_I))
+    Apost = np.zeros((num_steps + 1, num_synapses_IE))
+    Apre = np.zeros((num_steps + 1, num_synapses_IE))
+    W_IE = np.zeros((num_steps + 1, num_synapses_IE))
+    time = np.zeros((num_steps + 1, 1))
+    spike_E = np.zeros((num_steps + 1, N_E))
+    spike_I = np.zeros((num_steps + 1, N_I))
     # spt_E = np.zeros((1, N_E))
-    spt_E = np.zeros((num_steps_per_sample+1, N_E))
+    spt_E = np.zeros((num_steps + 1, N_E))
 
     v_E[0, :] = vE0
     v_I[0, :] = vI0
@@ -134,10 +134,10 @@ def ode_neuron_model(
     stim_percent_I[a:b] = 1  # FIGURES 3,4,7
     # stim_percent_I[a:b] = 1 + 0.1*np.random.randn(b)  # FIGURE 6
 
-    spike_I_time = np.zeros((num_steps_per_sample + 1, N_I))
+    spike_I_time = np.zeros((num_steps + 1, N_I))
     delay_index = int(syn_delay / step_size) - 1
 
-    for t in range(num_steps_per_sample):
+    for t in range(num_steps):
         time[t + 1, 0] = time[t, 0] + step_size
 
         # Update dxdt (excitatory).
@@ -151,7 +151,7 @@ def ode_neuron_model(
                 - v_E[t, :]  # -V(t)
                 + J_E / C_E * S_EI[t - delay_index, :]  # Z(t)
                 + mew_e  # μ
-                + ON1 * ue[0, t]  # Vstim(t)
+                + ON * ue[0, t]  # Vstim(t)
                 + sigma_e * (tau_E_m[0, :] ** 0.5) * whitenoise_E[t, :]
             ) / tau_E_m[0, :]
             # FIGURE 6
@@ -163,8 +163,8 @@ def ode_neuron_model(
                 - v_E[t, :]
                 + J_E / C_E * leftover_S_EI[t, :]
                 + mew_e
-                + ON1 * ue[0, t]
-                + sigma_e * (tau_E_m[0, :]**0.5) * whitenoise_E[t, :]
+                + ON * ue[0, t]
+                + sigma_e * (tau_E_m[0, :] ** 0.5) * whitenoise_E[t, :]
             ) / tau_E_m[0, :]
             # FIGURE 6
             # dv_Edt[i, :] = (vrest - v_E[i, :] + J_E/C_E * leftover_S_EI[i, :] + mew_e + ON1 * ue[0, i] + ON1 * 10 * np.random.randn(1, N_E) + sigma_e * (tau_E_m[0, :]**0.5) * whitenoise_E[i, :]) / tau_E_m[0, :]
@@ -190,14 +190,26 @@ def ode_neuron_model(
         # τr dX(t)/dt = -X(t) + W(t) * δ(t - tpre + tdelay)
         if t > delay_index:
             # TO MAKE FIGURES 3,4,7
-            dv_Idt[t, :] = (vrest - v_I[t, :] + J_I/C_I * S_IE[t-delay_index, :] + mew_i + ON1 *
-                            ui[0, t] + sigma_i * (tau_I_m[0, :]**0.5) * whitenoise_I[t, :]) / tau_I_m[0, :]
+            dv_Idt[t, :] = (
+                vrest
+                - v_I[t, :]
+                + J_I / C_I * S_IE[t-delay_index, :]
+                + mew_i
+                + ON * ui[0, t]
+                + sigma_i * (tau_I_m[0, :] ** 0.5) * whitenoise_I[t, :]
+            ) / tau_I_m[0, :]
             # TO MAKE FIGURE 6
             # dv_Idt[i, :] = (vrest - v_I[i, :] + J_I/C_I * S_IE[i-delay_index, :] + mew_i + ON1 * ui[0, i] + ON1 * 10 * np.random.randn(1, N_I) + sigma_i * (tau_I_m[0, :]**0.5) * whitenoise_I[i, :]) / tau_I_m[0, :]
         else:
             # TO MAKE FIGURES 3,4,7
-            dv_Idt[t, :] = (vrest - v_I[t, :] + J_I/C_I * leftover_S_IE[t, :] + mew_i + ON1 *
-                            ui[0, t] + sigma_i * (tau_I_m[0, :]**0.5) * whitenoise_I[t, :]) / tau_I_m[0, :]
+            dv_Idt[t, :] = (
+                vrest
+                - v_I[t, :]
+                + J_I / C_I * leftover_S_IE[t, :]
+                + mew_i
+                + ON * ui[0, t]
+                + sigma_i * (tau_I_m[0, :] ** 0.5) * whitenoise_I[t, :]
+            ) / tau_I_m[0, :]
             # TO MAKE FIGURE 6
             # dv_Idt[i, :] = (vrest - v_I[i, :] + J_I/C_I * leftover_S_IE[i, :] + mew_i + ON1 * ui[0, i] + ON1 * 10 * np.random.randn(1, N_I) + sigma_i * (tau_I_m[0, :]**0.5) * whitenoise_I[i, :]) / tau_I_m[0, :]
         dS_IEdt[t, :] = (-S_IE[t, :] + X_IE[t, :]) / tau_d
@@ -290,10 +302,9 @@ def ode_neuron_model(
                 v_I[t+1, k] = vrest
 
     # Calculate Synchrony.
-    # todo: what synchrony measurement is this?
-    # todo: different from Kuramoto?
+    # synchrony = sqrt(Var[V(t)] / Var[Vi(t)])
     N = N_E  # + N_I;
-    Vcomb = np.zeros((num_steps_per_sample + 1, N))
+    Vcomb = np.zeros((num_steps + 1, N))
     Vcomb[:, 0:N_E] = v_E
     V1 = np.mean(Vcomb, axis=1)
 
@@ -310,5 +321,7 @@ def ode_neuron_model(
 
     syn_squ = sigma_squ_v / (sum_sig / N)
     synchrony = np.sqrt(syn_squ)
+
+    assert 0 <= synchrony <= 1
 
     return time, v_E, v_I, S_EI, S_IE, X_EI, X_IE, Apost, Apre, W_IE, spike_E, spike_I, ref_E, ref_I, synchrony, spt_E, phif
