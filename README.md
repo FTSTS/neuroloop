@@ -16,4 +16,7 @@ pip install ./dbsenv  # install the dbsenv submodule
 
 # Run the example program.
 python src/main.py
+
+# Visualize training results in TensorBoard.
+tensorboard --logdir ./ppo_tensorboard  # open http://localhost:6006/
 ```
