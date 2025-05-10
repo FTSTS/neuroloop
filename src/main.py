@@ -92,5 +92,5 @@ def run_parallel():
 
 
 if __name__ == '__main__':
-    # run_sequential()
-    run_parallel()
+    run_sequential()
+    # run_parallel()
