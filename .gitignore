@@ -1,6 +1,12 @@
+# malware
 venv/
 __pycache__/
+.vscode/
 
-data/presim_state/*.mat
-data/postsim_state/*.mat
-data/kop/*.mat
+data/*
+!data/README.md
+
+libkuramoto.so
+
+ppo_tensorboard/
+ppo_dbs.zip
