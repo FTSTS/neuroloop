@@ -5,7 +5,7 @@ _Closed-Loop Deep-Brain Stimulation for Controlling Synchronization of Spiking N
 ## Running the program
 
 ```sh
-# Fetch and initialize latest versions of all submodules (ie. ftsts, dbsenv).
+# Fetch and initialize latest versions of all submodules (ie. dbsenv).
 $ git submodule update --init --recursive
 
 # Install dependencies, eg.
